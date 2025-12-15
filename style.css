@@ -141,6 +141,16 @@ button:active {
   font-size: 18px;
   opacity: 0.4;
   cursor: pointer;
+
+  .decision {
+  animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
   transition: 0.2s;
 }
 
