@@ -89,3 +89,8 @@ function render() {
 
 /* ===== Initial render ===== */
 render();
+if (decisions.length === 0) {
+  list.innerHTML = "<p class='empty'>No decisions yet.</p>";
+  return;
+}
+
