@@ -1,3 +1,5 @@
+I am sending over all three codes, I need to finish building this project TODAY....add 50 things if u have to...add everything directly to my codes and make sure everything is working
+HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,3 +35,268 @@
   <script src="script.js"></script>
 </body>
 </html>
+
+CSS
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+body {
+  background: #f4f6fb;
+  display: flex;
+  justify-content: center;
+  padding: 40px;
+  color: #0f172a;
+}
+
+.app {
+  width: 420px;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(18px);
+  padding: 28px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.6;
+  margin-bottom: 20px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+input, textarea {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+textarea {
+  resize: none;
+  min-height: 60px;
+}
+
+button {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #4f46e5;
+}
+
+ul {
+  list-style: none;
+}
+
+.decision {
+  padding: 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 12px;
+  @keyframes thinkIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.decision {
+  animation: thinkIn 0.6s ease forwards;
+}
+
+}
+
+.decision small {
+  opacity: 0.6;
+}
+
+.active {
+  box-shadow: 0 0 0 rgba(99,102,241,0.4);
+  animation: pulse 2.5s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(99,102,241,0.25); }
+  70% { box-shadow: 0 0 0 10px rgba(99,102,241,0); }
+  100% { box-shadow: 0 0 0 0 rgba(99,102,241,0); }
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+#decisionList {
+  max-height: 300px;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.app {
+  animation: appEnter 0.7s ease forwards;
+}
+
+@keyframes appEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.delete-decision {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  opacity: 0.4;
+  cursor: pointer;
+
+  .decision {
+  animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+  transition: 0.2s;
+}
+
+.delete-decision:hover {
+  opacity: 1;
+}
+
+JS
+let decisions = JSON.parse(localStorage.getItem("decisions")) || [];
+
+const titleInput = document.getElementById("titleInput");
+const contextInput = document.getElementById("contextInput");
+const expectedInput = document.getElementById("expectedInput");
+const confidenceInput = document.getElementById("confidenceInput");
+const confidenceValue = document.getElementById("confidenceValue");
+const addBtn = document.getElementById("addBtn");
+const list = document.getElementById("decisionList");
+
+/* ===== Confidence slider animation ===== */
+confidenceInput.addEventListener("input", () => {
+  const value = confidenceInput.value;
+  confidenceValue.textContent = value;
+
+  confidenceInput.style.background = `
+    linear-gradient(
+      90deg,
+      #6366f1 ${value * 10}%,
+      #e5e7eb ${value * 10}%
+    )
+  `;
+});
+
+/* ===== Add decision ===== */
+addBtn.addEventListener("click", () => {
+  const title = titleInput.value.trim();
+  if (!title) return;
+
+  decisions.push({
+    title,
+    context: contextInput.value,
+    expected: expectedInput.value,
+    confidence: confidenceInput.value,
+    function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
+
+  });
+
+  save();
+  render();
+  clearInputs();
+
+  // Button feedback animation
+  addBtn.textContent = "Decision Saved";
+  addBtn.disabled = true;
+
+  setTimeout(() => {
+    addBtn.textContent = "Add Decision";
+    addBtn.disabled = false;
+  }, 900);
+});
+
+/* ===== Save to localStorage ===== */
+function save() {
+  localStorage.setItem("decisions", JSON.stringify(decisions));
+}
+
+/* ===== Clear inputs ===== */
+function clearInputs() {
+  titleInput.value = "";
+  contextInput.value = "";
+  expectedInput.value = "";
+  confidenceInput.value = 5;
+  confidenceValue.textContent = 5;
+
+  confidenceInput.style.background = `
+    linear-gradient(90deg, #6366f1 50%, #e5e7eb 50%)
+  `;
+}
+
+/* ===== Render decisions ===== */
+function render() {
+  list.innerHTML = "";
+
+  decisions.forEach((d, index) => {
+    const li = document.createElement("li");
+    li.className = "decision";
+
+    li.innerHTML = `
+      <strong>${d.title}</strong>
+      <p>${d.context}</p>
+      <small>
+        Confidence: ${d.confidence}/10 · ${d.date}
+      </small>
+    `;
+
+    list.appendChild(li);
+  });
+}
+
+/* ===== Initial render ===== */
+render();
+if (decisions.length === 0) {
+  list.innerHTML = "<p class='empty'>No decisions yet.</p>";
+  return;
+}
