@@ -8,22 +8,21 @@ const confidenceValue = document.getElementById("confidenceValue");
 const addBtn = document.getElementById("addBtn");
 const list = document.getElementById("decisionList");
 
-/* ===== Confidence slider animation ===== */
+/* ===== Confidence slider ===== */
 confidenceInput.addEventListener("input", () => {
   const value = confidenceInput.value;
   confidenceValue.textContent = value;
-
-  confidenceInput.style.background = `
-    linear-gradient(
-      90deg,
-      #6366f1 ${value * 10}%,
-      #e5e7eb ${value * 10}%
-    )
-  `;
+  confidenceInput.style.background =
+    `linear-gradient(90deg, #6366f1 ${value * 10}%, #e5e7eb ${value * 10}%)`;
 });
 
 /* ===== Add decision ===== */
-addBtn.addEventListener("click", () => {
+addBtn.addEventListener("click", addDecision);
+titleInput.addEventListener("keypress", e => {
+  if (e.key === "Enter") addDecision();
+});
+
+function addDecision() {
   const title = titleInput.value.trim();
   if (!title) return;
 
@@ -32,21 +31,13 @@ addBtn.addEventListener("click", () => {
     context: contextInput.value,
     expected: expectedInput.value,
     confidence: confidenceInput.value,
-    function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-  });
-}
-
+    date: formatDate(new Date())
   });
 
   save();
   render();
   clearInputs();
 
-  // Button feedback animation
   addBtn.textContent = "Decision Saved";
   addBtn.disabled = true;
 
@@ -54,50 +45,61 @@ addBtn.addEventListener("click", () => {
     addBtn.textContent = "Add Decision";
     addBtn.disabled = false;
   }, 900);
-});
+}
 
-/* ===== Save to localStorage ===== */
+/* ===== Helpers ===== */
+function formatDate(date) {
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
+
 function save() {
   localStorage.setItem("decisions", JSON.stringify(decisions));
 }
 
-/* ===== Clear inputs ===== */
 function clearInputs() {
   titleInput.value = "";
   contextInput.value = "";
   expectedInput.value = "";
   confidenceInput.value = 5;
   confidenceValue.textContent = 5;
-
-  confidenceInput.style.background = `
-    linear-gradient(90deg, #6366f1 50%, #e5e7eb 50%)
-  `;
+  confidenceInput.dispatchEvent(new Event("input"));
 }
 
-/* ===== Render decisions ===== */
+/* ===== Delete ===== */
+function deleteDecision(index) {
+  decisions.splice(index, 1);
+  save();
+  render();
+}
+
+/* ===== Render ===== */
 function render() {
   list.innerHTML = "";
+
+  if (decisions.length === 0) {
+    list.innerHTML = "<p class='empty'>No decisions yet.</p>";
+    return;
+  }
 
   decisions.forEach((d, index) => {
     const li = document.createElement("li");
     li.className = "decision";
 
     li.innerHTML = `
+      <button class="delete" onclick="deleteDecision(${index})">✕</button>
       <strong>${d.title}</strong>
       <p>${d.context}</p>
-      <small>
-        Confidence: ${d.confidence}/10 · ${d.date}
-      </small>
+      <small>Confidence: ${d.confidence}/10 · ${d.date}</small>
     `;
 
     list.appendChild(li);
   });
 }
 
-/* ===== Initial render ===== */
+/* ===== Init ===== */
+confidenceInput.dispatchEvent(new Event("input"));
 render();
-if (decisions.length === 0) {
-  list.innerHTML = "<p class='empty'>No decisions yet.</p>";
-  return;
-}
-
