@@ -8,43 +8,51 @@ const confidenceValue = document.getElementById("confidenceValue");
 const addBtn = document.getElementById("addBtn");
 const list = document.getElementById("decisionList");
 
-/* Slider */
+/* ===== Confidence slider ===== */
 confidenceInput.addEventListener("input", () => {
-  const v = confidenceInput.value;
-  confidenceValue.textContent = v;
+  const value = confidenceInput.value;
+  confidenceValue.textContent = value;
   confidenceInput.style.background =
-    `linear-gradient(90deg, #6366f1 ${v * 10}%, #e5e7eb ${v * 10}%)`;
+    `linear-gradient(90deg, #6366f1 ${value * 10}%, #e5e7eb ${value * 10}%)`;
 });
 
-/* Add */
-addBtn.addEventListener("click", () => {
+/* ===== Add decision ===== */
+addBtn.addEventListener("click", addDecision);
+
+function addDecision() {
   const title = titleInput.value.trim();
   if (!title) return;
 
-  const biases = [...document.querySelectorAll(".biases input:checked")]
-    .map(b => b.value);
-
-  decisions.unshift({
+  decisions.push({
     title,
     context: contextInput.value,
     expected: expectedInput.value,
     confidence: confidenceInput.value,
-    biases,
     repeat: null,
-    date: new Date().toISOString()
+    date: formatDate(new Date())
   });
 
   save();
   render();
   clearInputs();
 
-  addBtn.textContent = "Saved ✓";
+  addBtn.textContent = "Decision Saved";
   addBtn.disabled = true;
+
   setTimeout(() => {
     addBtn.textContent = "Add Decision";
     addBtn.disabled = false;
-  }, 800);
-});
+  }, 900);
+}
+
+/* ===== Helpers ===== */
+function formatDate(date) {
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
 
 function save() {
   localStorage.setItem("decisions", JSON.stringify(decisions));
@@ -56,57 +64,52 @@ function clearInputs() {
   expectedInput.value = "";
   confidenceInput.value = 5;
   confidenceInput.dispatchEvent(new Event("input"));
-  document.querySelectorAll(".biases input").forEach(b => b.checked = false);
 }
 
-function formatDate(d) {
-  return new Date(d).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-  });
-}
-
-function toggleRepeat(i, value) {
-  decisions[i].repeat = value;
+/* ===== Delete ===== */
+function deleteDecision(index) {
+  decisions.splice(index, 1);
   save();
   render();
 }
 
-function removeDecision(i) {
-  decisions.splice(i, 1);
+/* ===== Repeat toggle ===== */
+function setRepeat(index, value) {
+  decisions[index].repeat = value;
   save();
   render();
 }
 
-/* Render */
+/* ===== Render ===== */
 function render() {
   list.innerHTML = "";
 
   if (decisions.length === 0) {
-    list.innerHTML = "<p style='opacity:.5'>No decisions yet.</p>";
+    list.innerHTML = "<p class='empty'>No decisions yet.</p>";
     return;
   }
 
-  decisions.forEach((d, i) => {
+  decisions.forEach((d, index) => {
     const li = document.createElement("li");
     li.className = "decision";
 
     li.innerHTML = `
-      <button class="delete" onclick="removeDecision(${i})">✕</button>
+      <button class="delete" onclick="deleteDecision(${index})">✕</button>
       <strong>${d.title}</strong>
-      <p>${d.context}</p>
-      <small>Confidence: ${d.confidence}/10 · ${formatDate(d.date)}</small>
+      <p>${d.context || ""}</p>
+      <small>Confidence: ${d.confidence}/10 · ${d.date}</small>
+
       <div class="repeat">
         Repeat?
-        <button onclick="toggleRepeat(${i}, true)">Yes</button>
-        <button onclick="toggleRepeat(${i}, false)">No</button>
-        ${d.repeat === null ? "" : d.repeat ? "✔️" : "❌"}
+        <button class="${d.repeat === true ? "active" : ""}" onclick="setRepeat(${index}, true)">Yes</button>
+        <button class="${d.repeat === false ? "active" : ""}" onclick="setRepeat(${index}, false)">No</button>
       </div>
     `;
+
     list.appendChild(li);
   });
 }
 
+/* ===== Init ===== */
 confidenceInput.dispatchEvent(new Event("input"));
 render();
